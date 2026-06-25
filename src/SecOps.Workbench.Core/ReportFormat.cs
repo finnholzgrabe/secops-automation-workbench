@@ -3,7 +3,8 @@ namespace SecOps.Workbench.Core;
 public enum ReportFormat
 {
     Markdown,
-    Json
+    Json,
+    Html
 }
 
 public static class ReportFormats
@@ -22,6 +23,9 @@ public static class ReportFormats
                 return true;
             case "json":
                 format = ReportFormat.Json;
+                return true;
+            case "html":
+                format = ReportFormat.Html;
                 return true;
             default:
                 format = ReportFormat.Markdown;

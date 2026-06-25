@@ -31,7 +31,8 @@ dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspiciou
 ```
 
 The JSON report has a stable top-level shape and always carries `"dryRun": true`.
-See [examples/triage-report.json](examples/triage-report.json).
+See [examples/triage-report.json](examples/triage-report.json). Use `--format html`
+for a self-contained HTML report ([examples/triage-report.html](examples/triage-report.html)).
 
 ## 3. Generate an analyst case note
 

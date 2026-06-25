@@ -127,9 +127,9 @@ internal static class Cli
             return 2;
         }
 
-        if (caseNote && formatSpecified && format == ReportFormat.Json)
+        if (caseNote && formatSpecified && format != ReportFormat.Markdown)
         {
-            Console.Error.WriteLine("Case notes are only available in markdown; drop --format json or --case-note.");
+            Console.Error.WriteLine("Case notes are only available in markdown; drop --format or --case-note.");
             return 2;
         }
 
@@ -365,7 +365,7 @@ internal static class Cli
             switch (arg)
             {
                 case "--format":
-                    if (i + 1 >= args.Length || !ReportFormats.TryParse(args[++i], out format))
+                    if (i + 1 >= args.Length || !ReportFormats.TryParse(args[++i], out format) || format == ReportFormat.Html)
                     {
                         Console.Error.WriteLine("Invalid or missing value for --format. Use 'markdown' or 'json'.");
                         return 2;
@@ -510,14 +510,14 @@ internal static class Cli
                           Usage:
                             secops-workbench --help
                             secops-workbench version
-                            secops-workbench triage <alert.json> [--format markdown|json] [--case-note] [--out <path>]
+                            secops-workbench triage <alert.json> [--format markdown|json|html] [--case-note] [--out <path>]
                             secops-workbench simulate <scenario.json> [--format markdown|json] [--out <path>] [--attack-layer <path>]
                             secops-workbench batch <alert-directory> [--format json|csv] [--out <path>]
                             secops-workbench playbooks <list|validate> [directory]
                             secops-workbench detections lint [directory]
 
                           Options for 'triage':
-                            --format markdown|json   Output format (default: markdown).
+                            --format markdown|json|html  Output format (default: markdown).
                             --case-note              Emit an analyst case note (markdown) instead of the report.
                             --out <path>             Write the report to a file instead of stdout.
                             --attack-layer <path>    Also write an ATT&CK Navigator layer JSON file.

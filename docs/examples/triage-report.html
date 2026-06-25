@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triage: sample-001</title>
+<style>
+:root { color-scheme: light dark; }
+body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; margin: 0; padding: 2rem; max-width: 820px; }
+main { margin: 0 auto; }
+h1 { font-size: 1.6rem; margin: 0.4rem 0 1rem; }
+h2 { font-size: 1.15rem; margin-top: 1.8rem; border-bottom: 1px solid #8884; padding-bottom: 0.2rem; }
+.banner { background: #f3f3f3; color: #444; border: 1px solid #ddd; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.9rem; }
+dl.meta { display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 1rem; }
+dl.meta dt { font-weight: 600; }
+dl.meta dd { margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0; }
+.chip { background: #6b8cff22; border: 1px solid #6b8cff66; border-radius: 999px; padding: 0.15rem 0.7rem; font-size: 0.85rem; }
+.sev { border-radius: 4px; padding: 0.1rem 0.5rem; font-size: 0.85rem; font-weight: 600; }
+.sev-low { background: #d7f5dd; color: #1c5b2b; }
+.sev-medium { background: #fdf0c8; color: #7a5a00; }
+.sev-high { background: #ffe0cc; color: #8a3b00; }
+.sev-critical { background: #ffd6d6; color: #8a0000; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { border: 1px solid #8884; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+</style>
+</head>
+<body>
+<main>
+<p class="banner">Synthetic report &middot; all response steps are dry-run recommendations</p>
+<h1>Suspicious login followed by MFA fatigue</h1>
+<dl class="meta">
+<dt>Alert ID</dt><dd>sample-001</dd>
+<dt>Severity</dt><dd><span class="sev sev-high">High</span></dd>
+<dt>Principal</dt><dd>alice@example.invalid</dd>
+<dt>Asset</dt><dd>idp-tenant-demo</dd>
+<dt>Recommended playbook</dt><dd>identity-mfa-fatigue-triage</dd>
+</dl>
+<p class="chips"><span class="chip">T1078 &middot; Valid Accounts</span><span class="chip">T1110 &middot; Brute Force</span><span class="chip">T1621 &middot; Multi-Factor Authentication Request Generation</span></p>
+<h2>Rationale</h2>
+<p>The alert is a High identity event with observables [failed_login_burst, mfa_push_spam, new_country, successful_login_after_failures], mapped to T1078, T1110, T1621. Selected playbook &#39;identity-mfa-fatigue-triage&#39;. The recommendation stays in analyst-review/dry-run mode.</p>
+<h2>Enrichment (synthetic)</h2>
+<ul>
+<li>Identity: alice@example.invalid &mdash; risk tier low</li>
+<li>Asset: idp-tenant-demo &mdash; criticality high</li>
+</ul>
+<table>
+<thead><tr><th>observable</th><th>verdict</th><th>context</th></tr></thead>
+<tbody>
+<tr><td>failed_login_burst</td><td>suspicious</td><td>Bursts of failed logins can indicate brute force or password spray. (synthetic)</td></tr>
+<tr><td>mfa_push_spam</td><td>suspicious</td><td>Repeated MFA prompts may indicate MFA fatigue or push bombing. (synthetic)</td></tr>
+<tr><td>new_country</td><td>suspicious</td><td>A first-seen country can indicate account takeover or legitimate travel. (synthetic)</td></tr>
+<tr><td>successful_login_after_failures</td><td>suspicious</td><td>A success after many failures can indicate a guessed or sprayed credential. (synthetic)</td></tr>
+</tbody></table>
+<h2>Recommended safe actions</h2>
+<ul>
+<li>Open a case note and keep every response action in dry-run mode.</li>
+<li>Ask the user to confirm whether the recent MFA prompts were expected.</li>
+<li>Review MFA push volume and look for repeated denials followed by a late approval.</li>
+<li>If MFA fatigue is confirmed, recommend session revocation and password reset as analyst-approved steps.</li>
+<li>Suggest number-matching or prompt throttling as a follow-up hardening recommendation.</li>
+</ul>
+</main>
+</body>
+</html>

@@ -47,6 +47,12 @@ dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspiciou
 
 The JSON report has a stable top-level shape (`alertId`, `severity`, `techniqueIds`, `recommendedPlaybook`, `recommendedActions`, `rationale`, `dryRun`). An unknown `--format` exits non-zero. Every report keeps `dryRun: true`, reflecting the safe-by-default response model.
 
+`--format html` renders a self-contained, dependency-free HTML report (all dynamic values are HTML-encoded). This is what the published demo page shows.
+
+```sh
+dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspicious-login.json --format html --out artifacts/report.html
+```
+
 Add `--attack-layer <path>` to also write an [ATT&CK Navigator](https://mitre-attack.github.io/attack-navigator/) layer (v4.5) for the mapped techniques. The file loads directly into the Navigator for visualization; technique counts become the heatmap score.
 
 ```sh
@@ -140,6 +146,8 @@ artifacts/                 Generated outputs; heavy or local outputs are ignored
 ## Demo
 
 See [docs/demo.md](docs/demo.md) for a single reproducible run, with captured example output under [docs/examples/](docs/examples). The architecture, including a diagram, is in [docs/architecture.md](docs/architecture.md).
+
+A static demo page lives at [docs/index.html](docs/index.html); enabling GitHub Pages on the `docs/` folder publishes it (with the HTML triage report and other sample output) as a browsable site.
 
 ## Roadmap
 

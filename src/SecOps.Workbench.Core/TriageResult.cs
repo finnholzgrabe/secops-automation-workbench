@@ -16,6 +16,7 @@ public sealed record TriageResult(
     public string Render(ReportFormat format) => format switch
     {
         ReportFormat.Json => ToJson(),
+        ReportFormat.Html => HtmlReport.Render(this),
         _ => ToMarkdown()
     };
 
