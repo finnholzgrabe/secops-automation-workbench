@@ -109,6 +109,10 @@ detections/                Sigma-inspired example rules and test fixtures
 artifacts/                 Generated outputs; heavy or local outputs are ignored
 ```
 
+## Demo
+
+See [docs/demo.md](docs/demo.md) for a single reproducible run, with captured example output under [docs/examples/](docs/examples). The architecture, including a diagram, is in [docs/architecture.md](docs/architecture.md).
+
 ## Roadmap
 
 - Safe response simulator with dry-run and rollback semantics

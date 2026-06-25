@@ -2,6 +2,21 @@
 
 The workbench is built around a deliberately small pipeline:
 
+```mermaid
+flowchart TD
+    A[raw alert JSON] --> B[AlertParser]
+    B --> C[SecurityAlert]
+    C --> D[TriageEngine]
+    D --> E[TechniqueMapper<br/>declarative ATT&CK-style catalog]
+    D --> F[EnrichmentService<br/>synthetic identity / asset / reputation]
+    D --> G[PlaybookSelector<br/>data-driven playbook definitions]
+    E --> H[TriageResult]
+    F --> H
+    G --> H
+    H --> I[CLI report<br/>markdown / json]
+    H --> J[analyst case note<br/>markdown]
+```
+
 ```text
 raw alert JSON
   -> AlertParser

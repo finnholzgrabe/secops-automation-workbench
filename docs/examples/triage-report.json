@@ -1,0 +1,70 @@
+{
+  "alertId": "sample-001",
+  "title": "Suspicious login followed by MFA fatigue",
+  "source": "synthetic-identity-provider",
+  "severity": "High",
+  "category": "identity",
+  "principal": "alice@example.invalid",
+  "asset": "idp-tenant-demo",
+  "observables": [
+    "failed_login_burst",
+    "mfa_push_spam",
+    "new_country",
+    "successful_login_after_failures"
+  ],
+  "techniqueIds": [
+    "T1078",
+    "T1110",
+    "T1621"
+  ],
+  "recommendedPlaybook": "identity-mfa-fatigue-triage",
+  "recommendedActions": [
+    "Open a case note and keep every response action in dry-run mode.",
+    "Ask the user to confirm whether the recent MFA prompts were expected.",
+    "Review MFA push volume and look for repeated denials followed by a late approval.",
+    "If MFA fatigue is confirmed, recommend session revocation and password reset as analyst-approved steps.",
+    "Suggest number-matching or prompt throttling as a follow-up hardening recommendation."
+  ],
+  "rationale": "The alert is a High identity event with observables [failed_login_burst, mfa_push_spam, new_country, successful_login_after_failures], mapped to T1078, T1110, T1621. Selected playbook 'identity-mfa-fatigue-triage'. The recommendation stays in analyst-review/dry-run mode.",
+  "dryRun": true,
+  "enrichment": {
+    "identity": {
+      "principal": "alice@example.invalid",
+      "isPrivileged": false,
+      "riskTier": "low",
+      "riskHints": [
+        "Synthetic identity context - not sourced from a real identity provider."
+      ]
+    },
+    "asset": {
+      "asset": "idp-tenant-demo",
+      "criticality": "high",
+      "notes": [
+        "Asset name suggests production or identity infrastructure.",
+        "Synthetic asset context - not sourced from a real CMDB."
+      ]
+    },
+    "observables": [
+      {
+        "observable": "failed_login_burst",
+        "verdict": "suspicious",
+        "context": "Bursts of failed logins can indicate brute force or password spray. (synthetic)"
+      },
+      {
+        "observable": "mfa_push_spam",
+        "verdict": "suspicious",
+        "context": "Repeated MFA prompts may indicate MFA fatigue or push bombing. (synthetic)"
+      },
+      {
+        "observable": "new_country",
+        "verdict": "suspicious",
+        "context": "A first-seen country can indicate account takeover or legitimate travel. (synthetic)"
+      },
+      {
+        "observable": "successful_login_after_failures",
+        "verdict": "suspicious",
+        "context": "A success after many failures can indicate a guessed or sprayed credential. (synthetic)"
+      }
+    ]
+  }
+}
