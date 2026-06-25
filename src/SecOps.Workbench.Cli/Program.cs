@@ -46,6 +46,7 @@ internal static class Cli
         var formatSpecified = false;
         var caseNote = false;
         string? outPath = null;
+        string? attackLayerPath = null;
 
         for (var i = 1; i < args.Length; i++)
         {
@@ -80,6 +81,16 @@ internal static class Cli
                     }
 
                     outPath = args[++i];
+                    break;
+
+                case "--attack-layer":
+                    if (i + 1 >= args.Length)
+                    {
+                        Console.Error.WriteLine("Missing value for --attack-layer (expected a file path).");
+                        return 2;
+                    }
+
+                    attackLayerPath = args[++i];
                     break;
 
                 default:
@@ -128,6 +139,17 @@ internal static class Cli
             {
                 await File.WriteAllTextAsync(outPath, report);
                 Console.Error.WriteLine($"Report written to {outPath}");
+            }
+
+            if (attackLayerPath is not null)
+            {
+                var techniques = TechniqueFrequency.Tally(new[] { result.TechniqueIds });
+                var layer = AttackNavigatorLayer.Build(
+                    $"Triage {alert.Id}",
+                    $"ATT&CK techniques mapped for alert {alert.Id} by the SecOps Automation Workbench (synthetic).",
+                    techniques);
+                await File.WriteAllTextAsync(attackLayerPath, layer);
+                Console.Error.WriteLine($"ATT&CK Navigator layer written to {attackLayerPath}");
             }
 
             return 0;
@@ -276,6 +298,7 @@ internal static class Cli
                             --format markdown|json   Output format (default: markdown).
                             --case-note              Emit an analyst case note (markdown) instead of the report.
                             --out <path>             Write the report to a file instead of stdout.
+                            --attack-layer <path>    Also write an ATT&CK Navigator layer JSON file.
 
                           The 'playbooks' command reads JSON playbooks from a directory (default: playbooks/).
                           The 'detections' command lints Sigma-inspired rules from a directory (default: detections/).

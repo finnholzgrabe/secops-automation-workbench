@@ -47,6 +47,12 @@ dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspiciou
 
 The JSON report has a stable top-level shape (`alertId`, `severity`, `techniqueIds`, `recommendedPlaybook`, `recommendedActions`, `rationale`, `dryRun`). An unknown `--format` exits non-zero. Every report keeps `dryRun: true`, reflecting the safe-by-default response model.
 
+Add `--attack-layer <path>` to also write an [ATT&CK Navigator](https://mitre-attack.github.io/attack-navigator/) layer (v4.5) for the mapped techniques. The file loads directly into the Navigator for visualization; technique counts become the heatmap score.
+
+```sh
+dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspicious-login.json --attack-layer artifacts/layer.json
+```
+
 ### Playbooks
 
 Recommendations are driven by local playbook definitions under [`playbooks/`](playbooks). Each playbook declares `id`, `title`, `description`, `category`, `techniques`, `recommendedActions`, and `dryRunOnly`. Triage selects the best-fitting playbook by category and technique overlap; when no directory is present it falls back to a built-in catalog, so triage works from a clean checkout.
