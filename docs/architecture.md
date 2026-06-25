@@ -13,8 +13,9 @@ flowchart TD
     E --> H[TriageResult]
     F --> H
     G --> H
-    H --> I[CLI report<br/>markdown / json]
+    H --> I[CLI report<br/>markdown / json / html]
     H --> J[analyst case note<br/>markdown]
+    H --> K[ATT&CK Navigator layer<br/>json]
 ```
 
 ```text
@@ -45,6 +46,19 @@ fields (title, status, ATT&CK tag, false-positive notes, test-fixture reference)
 with dependency-free structural checks, and the CLI additionally verifies the
 referenced fixture exists. These are illustrative examples, not production
 detections.
+
+## Commands
+
+All commands build on the same core pipeline:
+
+- `triage` — triage a single alert; renders markdown, json, or html, an analyst case note (`--case-note`), and optionally an ATT&CK Navigator layer (`--attack-layer`).
+- `simulate` — run triage over an ordered scenario of synthetic alerts (`ScenarioRunner`) and produce an incident timeline with aggregated technique coverage. Adversary emulation as data; nothing is executed.
+- `batch` — triage every alert in a directory and emit aggregate metrics (`TriageSummary`) as json or csv.
+- `playbooks list|validate` — list or validate playbook definitions.
+- `detections lint` — lint Sigma-inspired detection content.
+
+The simulator, batch metrics, and Navigator export all share `TechniqueFrequency.Tally`
+for deterministic technique aggregation.
 
 ## Boundaries
 
