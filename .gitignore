@@ -1,0 +1,13 @@
+CLAUDE.md
+.DS_Store
+bin/
+obj/
+TestResults/
+artifacts/*.json
+artifacts/*.csv
+artifacts/*.md
+!artifacts/README.md
+samples/generated/
+.idea/
+.vscode/
+.dotnet-home/
