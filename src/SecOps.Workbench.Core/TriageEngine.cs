@@ -2,44 +2,23 @@ namespace SecOps.Workbench.Core;
 
 public sealed class TriageEngine
 {
+    private readonly TechniqueMapper _techniqueMapper;
+
+    public TriageEngine(TechniqueMapper? techniqueMapper = null)
+    {
+        _techniqueMapper = techniqueMapper ?? new TechniqueMapper();
+    }
+
     public TriageResult Triage(SecurityAlert alert)
     {
         ArgumentNullException.ThrowIfNull(alert);
 
-        var techniques = MapTechniques(alert.Observables);
+        var techniques = _techniqueMapper.Map(alert.Observables);
         var actions = RecommendActions(alert, techniques);
         var playbook = SelectPlaybook(alert, techniques);
         var rationale = BuildRationale(alert, techniques);
 
         return new TriageResult(alert, techniques, playbook, actions, rationale);
-    }
-
-    private static IReadOnlyList<string> MapTechniques(IReadOnlyList<string> observables)
-    {
-        var normalized = observables.Select(item => item.Trim().ToLowerInvariant()).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var techniques = new SortedSet<string>(StringComparer.Ordinal);
-
-        if (normalized.Contains("failed_login_burst") || normalized.Contains("password_spray"))
-        {
-            techniques.Add("T1110");
-        }
-
-        if (normalized.Contains("mfa_push_spam") || normalized.Contains("mfa_fatigue"))
-        {
-            techniques.Add("T1621");
-        }
-
-        if (normalized.Contains("successful_login_after_failures") || normalized.Contains("valid_account_used"))
-        {
-            techniques.Add("T1078");
-        }
-
-        if (normalized.Contains("new_country") || normalized.Contains("impossible_travel"))
-        {
-            techniques.Add("T1078");
-        }
-
-        return techniques.ToArray();
     }
 
     private static string SelectPlaybook(SecurityAlert alert, IReadOnlyList<string> techniques)

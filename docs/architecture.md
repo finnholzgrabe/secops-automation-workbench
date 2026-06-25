@@ -6,10 +6,14 @@ The workbench is built around a deliberately small pipeline:
 raw alert JSON
   -> AlertParser
   -> SecurityAlert
-  -> TriageEngine
+  -> TriageEngine (TechniqueMapper over a declarative ATT&CK-style catalog)
   -> TriageResult
-  -> CLI report / generated case note
+  -> CLI report (markdown | json) / generated case note
 ```
+
+Technique mapping is data-driven: `AttackTechniqueCatalog` declares the
+observable-signal-to-technique rules, and `TechniqueMapper` applies them. New
+mappings are added as catalog entries rather than new `if` branches.
 
 ## Boundaries
 
