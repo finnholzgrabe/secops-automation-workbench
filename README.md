@@ -81,6 +81,17 @@ dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspiciou
 
 Case notes are Markdown only and, like every output, are generated from synthetic data with all response steps framed as dry-run recommendations.
 
+### Scenario simulation
+
+Run triage over an ordered sequence of synthetic alerts to see how an intrusion escalates over time. This is **adversary emulation as synthetic data** — nothing is executed. The output is an incident timeline plus aggregated ATT&CK technique coverage.
+
+```sh
+dotnet run --project src/SecOps.Workbench.Cli -- simulate samples/scenarios/identity-mfa-fatigue.json
+dotnet run --project src/SecOps.Workbench.Cli -- simulate samples/scenarios/identity-mfa-fatigue.json --attack-layer artifacts/incident-layer.json
+```
+
+A scenario file is a `name`, a `description`, and an ordered `alerts` array (each entry uses the same shape as a single alert). The simulator orders the timeline by timestamp, reports the peak severity, and tallies technique frequency across the incident.
+
 ### Detection content linting
 
 The [`detections/`](detections) folder holds **Sigma-inspired example rules** (not production detections). A dependency-free content linter checks each rule for the fields that make a detection reviewable: a `title`, a valid Sigma `status`, at least one ATT&CK technique tag (`attack.tNNNN`), meaningful `falsepositives` notes, and a `testFixture` reference that must point to an existing fixture file.

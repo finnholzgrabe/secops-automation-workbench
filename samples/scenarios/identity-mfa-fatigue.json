@@ -1,0 +1,50 @@
+{
+  "name": "Identity MFA fatigue intrusion",
+  "description": "A synthetic identity attack chain escalating from password spray to use of a valid account from a new country.",
+  "alerts": [
+    {
+      "id": "intrusion-01",
+      "title": "Password spray against multiple accounts",
+      "source": "synthetic-identity-provider",
+      "severity": "low",
+      "category": "identity",
+      "timestampUtc": "2026-06-25T10:00:00Z",
+      "principal": "alice@example.invalid",
+      "asset": "idp-tenant-demo",
+      "observables": ["password_spray"]
+    },
+    {
+      "id": "intrusion-02",
+      "title": "Burst of failed logins for a single principal",
+      "source": "synthetic-identity-provider",
+      "severity": "medium",
+      "category": "identity",
+      "timestampUtc": "2026-06-25T10:03:00Z",
+      "principal": "alice@example.invalid",
+      "asset": "idp-tenant-demo",
+      "observables": ["failed_login_burst"]
+    },
+    {
+      "id": "intrusion-03",
+      "title": "Repeated MFA prompts (possible fatigue)",
+      "source": "synthetic-identity-provider",
+      "severity": "high",
+      "category": "identity",
+      "timestampUtc": "2026-06-25T10:06:00Z",
+      "principal": "alice@example.invalid",
+      "asset": "idp-tenant-demo",
+      "observables": ["mfa_push_spam", "mfa_fatigue"]
+    },
+    {
+      "id": "intrusion-04",
+      "title": "Successful login from a new country",
+      "source": "synthetic-identity-provider",
+      "severity": "critical",
+      "category": "identity",
+      "timestampUtc": "2026-06-25T10:09:00Z",
+      "principal": "alice@example.invalid",
+      "asset": "idp-tenant-demo",
+      "observables": ["successful_login_after_failures", "new_country"]
+    }
+  ]
+}

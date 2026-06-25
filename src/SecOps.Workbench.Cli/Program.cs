@@ -34,6 +34,11 @@ internal static class Cli
             return RunDetections(args);
         }
 
+        if (args[0] == "simulate")
+        {
+            return await RunSimulateAsync(args);
+        }
+
         Console.Error.WriteLine($"Unknown command '{args[0]}'.");
         PrintHelp();
         return 2;
@@ -234,6 +239,108 @@ internal static class Cli
         return invalid == 0 ? 0 : 1;
     }
 
+    private static async Task<int> RunSimulateAsync(string[] args)
+    {
+        string? scenarioPath = null;
+        var format = ReportFormat.Markdown;
+        string? outPath = null;
+        string? attackLayerPath = null;
+
+        for (var i = 1; i < args.Length; i++)
+        {
+            var arg = args[i];
+            switch (arg)
+            {
+                case "--format":
+                    if (i + 1 >= args.Length || !ReportFormats.TryParse(args[++i], out format))
+                    {
+                        Console.Error.WriteLine("Invalid or missing value for --format. Use 'markdown' or 'json'.");
+                        return 2;
+                    }
+
+                    break;
+
+                case "--out":
+                    if (i + 1 >= args.Length)
+                    {
+                        Console.Error.WriteLine("Missing value for --out (expected a file path).");
+                        return 2;
+                    }
+
+                    outPath = args[++i];
+                    break;
+
+                case "--attack-layer":
+                    if (i + 1 >= args.Length)
+                    {
+                        Console.Error.WriteLine("Missing value for --attack-layer (expected a file path).");
+                        return 2;
+                    }
+
+                    attackLayerPath = args[++i];
+                    break;
+
+                default:
+                    if (arg.StartsWith('-'))
+                    {
+                        Console.Error.WriteLine($"Unknown option '{arg}'.");
+                        return 2;
+                    }
+
+                    if (scenarioPath is not null)
+                    {
+                        Console.Error.WriteLine("Only one scenario file can be simulated at a time.");
+                        return 2;
+                    }
+
+                    scenarioPath = arg;
+                    break;
+            }
+        }
+
+        if (scenarioPath is null)
+        {
+            Console.Error.WriteLine("Usage: secops-workbench simulate <scenario.json> [--format markdown|json] [--out <path>] [--attack-layer <path>]");
+            return 2;
+        }
+
+        try
+        {
+            var json = await File.ReadAllTextAsync(scenarioPath);
+            var scenario = ScenarioParser.Parse(json);
+            var playbooks = PlaybookStore.LoadForTriage(PlaybookStore.DefaultDirectory);
+            var report = new ScenarioRunner(new TriageEngine(playbooks)).Run(scenario);
+            var output = report.Render(format);
+
+            if (outPath is null)
+            {
+                Console.WriteLine(output);
+            }
+            else
+            {
+                await File.WriteAllTextAsync(outPath, output);
+                Console.Error.WriteLine($"Incident report written to {outPath}");
+            }
+
+            if (attackLayerPath is not null)
+            {
+                var layer = AttackNavigatorLayer.Build(
+                    scenario.Name,
+                    $"ATT&CK techniques observed across scenario '{scenario.Name}' (synthetic).",
+                    report.Techniques);
+                await File.WriteAllTextAsync(attackLayerPath, layer);
+                Console.Error.WriteLine($"ATT&CK Navigator layer written to {attackLayerPath}");
+            }
+
+            return 0;
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or System.Text.Json.JsonException)
+        {
+            Console.Error.WriteLine($"Simulation failed: {ex.Message}");
+            return 1;
+        }
+    }
+
     private static int RunDetections(string[] args)
     {
         var subcommand = args.Length >= 2 ? args[1] : null;
@@ -291,6 +398,7 @@ internal static class Cli
                             secops-workbench --help
                             secops-workbench version
                             secops-workbench triage <alert.json> [--format markdown|json] [--case-note] [--out <path>]
+                            secops-workbench simulate <scenario.json> [--format markdown|json] [--out <path>] [--attack-layer <path>]
                             secops-workbench playbooks <list|validate> [directory]
                             secops-workbench detections lint [directory]
 
