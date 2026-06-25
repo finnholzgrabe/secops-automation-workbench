@@ -38,6 +38,8 @@ internal static class Cli
     {
         string? alertPath = null;
         var format = ReportFormat.Markdown;
+        var formatSpecified = false;
+        var caseNote = false;
         string? outPath = null;
 
         for (var i = 1; i < args.Length; i++)
@@ -58,6 +60,11 @@ internal static class Cli
                         return 2;
                     }
 
+                    formatSpecified = true;
+                    break;
+
+                case "--case-note":
+                    caseNote = true;
                     break;
 
                 case "--out":
@@ -90,7 +97,13 @@ internal static class Cli
 
         if (alertPath is null)
         {
-            Console.Error.WriteLine("Usage: secops-workbench triage <alert.json> [--format markdown|json] [--out <path>]");
+            Console.Error.WriteLine("Usage: secops-workbench triage <alert.json> [--format markdown|json] [--case-note] [--out <path>]");
+            return 2;
+        }
+
+        if (caseNote && formatSpecified && format == ReportFormat.Json)
+        {
+            Console.Error.WriteLine("Case notes are only available in markdown; drop --format json or --case-note.");
             return 2;
         }
 
@@ -100,7 +113,7 @@ internal static class Cli
             var alert = AlertParser.Parse(json);
             var playbooks = PlaybookStore.LoadForTriage(PlaybookStore.DefaultDirectory);
             var result = new TriageEngine(playbooks).Triage(alert);
-            var report = result.Render(format);
+            var report = caseNote ? CaseNote.Render(result) : result.Render(format);
 
             if (outPath is null)
             {
@@ -202,11 +215,12 @@ internal static class Cli
                           Usage:
                             secops-workbench --help
                             secops-workbench version
-                            secops-workbench triage <alert.json> [--format markdown|json] [--out <path>]
+                            secops-workbench triage <alert.json> [--format markdown|json] [--case-note] [--out <path>]
                             secops-workbench playbooks <list|validate> [directory]
 
                           Options for 'triage':
                             --format markdown|json   Output format (default: markdown).
+                            --case-note              Emit an analyst case note (markdown) instead of the report.
                             --out <path>             Write the report to a file instead of stdout.
 
                           The 'playbooks' command reads JSON playbooks from a directory (default: playbooks/).

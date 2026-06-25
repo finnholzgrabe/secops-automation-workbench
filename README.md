@@ -65,6 +65,16 @@ Validation enforces the safety model: every playbook must set `dryRunOnly: true`
 
 Triage attaches enrichment context behind three interfaces — `IIdentityContextProvider`, `IAssetContextProvider`, and `IReputationProvider`. **Only synthetic mock providers are implemented**: they make no network calls, read no real systems, and are fully deterministic (a stable FNV hash is used instead of `string.GetHashCode`, which is randomized per process). The enrichment adds principal risk hints, asset criticality, and per-observable context to every report, and is clearly labelled `synthetic` in the output. Real identity-provider, CMDB, or threat-intel integrations are intentionally out of scope.
 
+### Analyst case notes
+
+Add `--case-note` to emit a Markdown case note instead of the report. It collects the summary, observables, mapped techniques (with names), recommended playbook, an analyst checklist, a dry-run response plan, and an explicit limitations section:
+
+```sh
+dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspicious-login.json --case-note
+```
+
+Case notes are Markdown only and, like every output, are generated from synthetic data with all response steps framed as dry-run recommendations.
+
 ## Current slice
 
 Version 0.1 starts with a tiny but working vertical slice:
@@ -74,7 +84,7 @@ Version 0.1 starts with a tiny but working vertical slice:
 3. Map selected signals to ATT&CK-style technique IDs.
 4. Attach synthetic enrichment (identity, asset, observable context).
 5. Select a safe playbook recommendation.
-6. Print a deterministic analyst-facing triage summary.
+6. Print a deterministic analyst-facing triage summary, or a full case note.
 
 ## Architecture
 
@@ -90,7 +100,6 @@ artifacts/                 Generated outputs; heavy or local outputs are ignored
 ## Roadmap
 
 - Sigma-rule test fixtures and detection-content quality checks
-- Case-note generation in Markdown/JSON
 - Safe response simulator with dry-run and rollback semantics
 - Optional adapters for local Wazuh/Shuffle labs, never enabled by default
 

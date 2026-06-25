@@ -25,6 +25,23 @@ public static class AttackTechniqueCatalog
         new("T1078", "Valid Accounts",
             new[] { "successful_login_after_failures", "valid_account_used", "new_country", "impossible_travel" }),
     };
+
+    /// <summary>
+    /// Resolves a technique id to its catalog name, falling back to the id itself when the
+    /// technique is not in the default catalog (for example, from a custom mapper).
+    /// </summary>
+    public static string NameFor(string techniqueId)
+    {
+        foreach (var rule in Default)
+        {
+            if (rule.TechniqueId.Equals(techniqueId, StringComparison.OrdinalIgnoreCase))
+            {
+                return rule.TechniqueName;
+            }
+        }
+
+        return techniqueId;
+    }
 }
 
 /// <summary>
