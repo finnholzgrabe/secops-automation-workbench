@@ -30,6 +30,23 @@ dotnet run --project tests/SecOps.Workbench.Tests --no-build
 
 The test project is a dependency-free console runner on purpose, so the repository can be built offline from a clean checkout.
 
+### Report output formats
+
+The `triage` command renders a Markdown report by default and can emit deterministic JSON. Use `--out` to write to a file instead of stdout:
+
+```sh
+# Markdown to stdout (default)
+dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspicious-login.json
+
+# JSON to stdout
+dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspicious-login.json --format json
+
+# JSON written to a file (generated reports under artifacts/ are git-ignored)
+dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspicious-login.json --format json --out artifacts/triage.json
+```
+
+The JSON report has a stable top-level shape (`alertId`, `severity`, `techniqueIds`, `recommendedPlaybook`, `recommendedActions`, `rationale`, `dryRun`). An unknown `--format` exits non-zero. Every report keeps `dryRun: true`, reflecting the safe-by-default response model.
+
 ## Current slice
 
 Version 0.1 starts with a tiny but working vertical slice:

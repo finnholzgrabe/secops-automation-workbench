@@ -29,7 +29,10 @@ internal static class Program
         {
             ("parser reads sample identity alert", ParserReadsIdentityAlert),
             ("triage maps MFA fatigue to expected techniques", TriageMapsExpectedTechniques),
-            ("triage markdown contains dry-run safety wording", TriageMarkdownContainsSafetyWording)
+            ("triage markdown contains alert id, severity, techniques, dry-run", TriageMarkdownContainsContractFields),
+            ("triage json exposes stable top-level fields", TriageJsonHasStableFields),
+            ("report format parser rejects unknown formats", ReportFormatParserRejectsUnknown),
+            ("report format parser accepts known formats", ReportFormatParserAcceptsKnown)
         };
 
         var failed = 0;
@@ -71,13 +74,46 @@ internal static class Program
         AssertEqual("identity-mfa-fatigue-triage", result.RecommendedPlaybook);
     }
 
-    private static void TriageMarkdownContainsSafetyWording()
+    private static void TriageMarkdownContainsContractFields()
     {
         var alert = AlertParser.Parse(SampleAlertJson);
-        var markdown = new TriageEngine().Triage(alert).ToMarkdown();
+        var markdown = new TriageEngine().Triage(alert).Render(ReportFormat.Markdown);
 
+        AssertTrue(markdown.Contains("sample-001", StringComparison.Ordinal), "expected alert id");
+        AssertTrue(markdown.Contains("High", StringComparison.Ordinal), "expected severity");
+        AssertTrue(markdown.Contains("T1621", StringComparison.Ordinal), "expected mapped technique");
         AssertTrue(markdown.Contains("dry-run", StringComparison.OrdinalIgnoreCase), "expected dry-run wording");
         AssertTrue(markdown.Contains("analyst-review", StringComparison.OrdinalIgnoreCase), "expected analyst-review wording");
+    }
+
+    private static void TriageJsonHasStableFields()
+    {
+        var alert = AlertParser.Parse(SampleAlertJson);
+        var json = new TriageEngine().Triage(alert).Render(ReportFormat.Json);
+
+        using var document = System.Text.Json.JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        AssertEqual("sample-001", root.GetProperty("alertId").GetString());
+        AssertEqual("High", root.GetProperty("severity").GetString());
+        AssertEqual("identity-mfa-fatigue-triage", root.GetProperty("recommendedPlaybook").GetString());
+        AssertTrue(root.GetProperty("dryRun").GetBoolean(), "expected dryRun to be true");
+        AssertEqual(3, root.GetProperty("techniqueIds").GetArrayLength());
+        AssertTrue(root.TryGetProperty("recommendedActions", out _), "expected recommendedActions field");
+        AssertTrue(root.TryGetProperty("rationale", out _), "expected rationale field");
+    }
+
+    private static void ReportFormatParserRejectsUnknown()
+    {
+        AssertTrue(!ReportFormats.TryParse("yaml", out _), "expected unknown format to be rejected");
+        AssertTrue(!ReportFormats.TryParse("", out _), "expected empty format to be rejected");
+        AssertTrue(!ReportFormats.TryParse(null, out _), "expected null format to be rejected");
+    }
+
+    private static void ReportFormatParserAcceptsKnown()
+    {
+        AssertTrue(ReportFormats.TryParse("markdown", out var md) && md == ReportFormat.Markdown, "expected markdown");
+        AssertTrue(ReportFormats.TryParse("JSON", out var json) && json == ReportFormat.Json, "expected json (case-insensitive)");
     }
 
     private static void AssertEqual<T>(T expected, T actual)
