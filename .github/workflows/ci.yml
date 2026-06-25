@@ -14,4 +14,4 @@ jobs:
           dotnet-version: 8.0.x
       - run: dotnet restore
       - run: dotnet build --no-restore
-      - run: dotnet run --project tests/SecOps.Workbench.Tests --no-build
+      - run: dotnet test --no-build --verbosity normal

@@ -25,10 +25,10 @@ dotnet restore
 dotnet build --no-restore
 dotnet run --project src/SecOps.Workbench.Cli -- --help
 dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspicious-login.json
-dotnet run --project tests/SecOps.Workbench.Tests --no-build
+dotnet test
 ```
 
-The test project is a dependency-free console runner on purpose, so the repository can be built offline from a clean checkout.
+Tests use xUnit and run with `dotnet test`. The domain logic in `Core` has no external dependencies, so the interesting behaviour is fast and deterministic to verify.
 
 ### Report output formats
 
@@ -62,7 +62,7 @@ Version 0.1 starts with a tiny but working vertical slice:
 ```text
 src/SecOps.Workbench.Core  Domain model, parser, triage logic, playbook selection
 src/SecOps.Workbench.Cli   File IO, command parsing, user-facing output
-tests/SecOps.Workbench.Tests Dependency-free regression tests
+tests/SecOps.Workbench.Tests xUnit regression tests for parsing, mapping, triage, and output contracts
 docs/                      Architecture, threat model, roadmap, and scope notes
 samples/alerts/            Tiny synthetic alerts only
 artifacts/                 Generated outputs; heavy or local outputs are ignored

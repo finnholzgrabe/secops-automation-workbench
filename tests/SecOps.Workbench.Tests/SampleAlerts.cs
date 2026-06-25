@@ -1,0 +1,23 @@
+namespace SecOps.Workbench.Tests;
+
+internal static class SampleAlerts
+{
+    public const string IdentityMfaFatigue = """
+    {
+      "id": "sample-001",
+      "title": "Suspicious login followed by MFA fatigue",
+      "source": "synthetic-identity-provider",
+      "severity": "high",
+      "category": "identity",
+      "timestampUtc": "2026-06-25T10:15:00Z",
+      "principal": "alice@example.invalid",
+      "asset": "idp-tenant-demo",
+      "observables": [
+        "failed_login_burst",
+        "mfa_push_spam",
+        "new_country",
+        "successful_login_after_failures"
+      ]
+    }
+    """;
+}
