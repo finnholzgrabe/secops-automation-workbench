@@ -1,3 +1,4 @@
+using SecOps.Workbench.Cli;
 using SecOps.Workbench.Core;
 
 return await Cli.RunAsync(args);
@@ -21,6 +22,11 @@ internal static class Cli
         if (args[0] == "triage")
         {
             return await RunTriageAsync(args);
+        }
+
+        if (args[0] == "playbooks")
+        {
+            return RunPlaybooks(args);
         }
 
         Console.Error.WriteLine($"Unknown command '{args[0]}'.");
@@ -92,7 +98,8 @@ internal static class Cli
         {
             var json = await File.ReadAllTextAsync(alertPath);
             var alert = AlertParser.Parse(json);
-            var result = new TriageEngine().Triage(alert);
+            var playbooks = PlaybookStore.LoadForTriage(PlaybookStore.DefaultDirectory);
+            var result = new TriageEngine(playbooks).Triage(alert);
             var report = result.Render(format);
 
             if (outPath is null)
@@ -114,6 +121,79 @@ internal static class Cli
         }
     }
 
+    private static int RunPlaybooks(string[] args)
+    {
+        var subcommand = args.Length >= 2 ? args[1] : null;
+        var directory = args.Length >= 3 ? args[2] : PlaybookStore.DefaultDirectory;
+
+        if (subcommand is not ("list" or "validate"))
+        {
+            Console.Error.WriteLine("Usage: secops-workbench playbooks <list|validate> [directory]");
+            return 2;
+        }
+
+        if (!Directory.Exists(directory))
+        {
+            Console.Error.WriteLine($"Playbook directory '{directory}' was not found.");
+            return 1;
+        }
+
+        var loaded = PlaybookStore.LoadDirectory(directory);
+        if (loaded.Count == 0)
+        {
+            Console.Error.WriteLine($"No playbook files (*.json) found in '{directory}'.");
+            return 1;
+        }
+
+        return subcommand == "list" ? ListPlaybooks(loaded) : ValidatePlaybooks(loaded);
+    }
+
+    private static int ListPlaybooks(IReadOnlyList<PlaybookStore.LoadedPlaybook> loaded)
+    {
+        foreach (var item in loaded)
+        {
+            if (item is { Playbook: { } playbook, Errors.Count: 0 })
+            {
+                var techniques = playbook.Techniques.Count == 0 ? "-" : string.Join(", ", playbook.Techniques);
+                Console.WriteLine($"{playbook.Id}  [{playbook.Category}]  techniques: {techniques}");
+                Console.WriteLine($"    {playbook.Title}");
+            }
+            else
+            {
+                Console.WriteLine($"{Path.GetFileName(item.Path)}  (invalid - run 'playbooks validate')");
+            }
+        }
+
+        return 0;
+    }
+
+    private static int ValidatePlaybooks(IReadOnlyList<PlaybookStore.LoadedPlaybook> loaded)
+    {
+        var invalid = 0;
+
+        foreach (var item in loaded)
+        {
+            var name = Path.GetFileName(item.Path);
+            if (item.Errors.Count == 0)
+            {
+                Console.WriteLine($"OK    {name}");
+            }
+            else
+            {
+                invalid++;
+                Console.WriteLine($"FAIL  {name}");
+                foreach (var error in item.Errors)
+                {
+                    Console.WriteLine($"        - {error}");
+                }
+            }
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"{loaded.Count - invalid}/{loaded.Count} playbooks valid.");
+        return invalid == 0 ? 0 : 1;
+    }
+
     private static void PrintHelp()
     {
         Console.WriteLine("""
@@ -123,10 +203,13 @@ internal static class Cli
                             secops-workbench --help
                             secops-workbench version
                             secops-workbench triage <alert.json> [--format markdown|json] [--out <path>]
+                            secops-workbench playbooks <list|validate> [directory]
 
                           Options for 'triage':
                             --format markdown|json   Output format (default: markdown).
                             --out <path>             Write the report to a file instead of stdout.
+
+                          The 'playbooks' command reads JSON playbooks from a directory (default: playbooks/).
 
                           This is an engineering workbench for synthetic alert triage and safe playbook recommendations.
                           """);

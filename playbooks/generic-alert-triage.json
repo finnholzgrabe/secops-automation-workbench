@@ -1,0 +1,13 @@
+{
+  "id": "generic-alert-triage",
+  "title": "Generic alert triage",
+  "description": "Baseline triage steps for any alert that does not match a more specific playbook.",
+  "category": "any",
+  "techniques": [],
+  "recommendedActions": [
+    "Open a case note and keep every response action in dry-run mode.",
+    "Confirm the alert is not known maintenance activity or an established false positive.",
+    "Escalate to a human analyst for review before any containment action."
+  ],
+  "dryRunOnly": true
+}

@@ -1,0 +1,17 @@
+{
+  "id": "identity-alert-basic-triage",
+  "title": "Identity alert basic triage",
+  "description": "First-line triage for identity alerts such as brute force or use of valid accounts.",
+  "category": "identity",
+  "techniques": [
+    "T1078",
+    "T1110"
+  ],
+  "recommendedActions": [
+    "Open a case note and keep every response action in dry-run mode.",
+    "Verify whether the principal recently changed password, MFA, or recovery settings.",
+    "Review recent authentication events for the affected asset or tenant.",
+    "If compromise is suspected, recommend session review and an analyst-approved password reset."
+  ],
+  "dryRunOnly": true
+}

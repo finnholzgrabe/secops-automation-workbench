@@ -1,0 +1,19 @@
+{
+  "id": "identity-mfa-fatigue-triage",
+  "title": "Identity MFA fatigue triage",
+  "description": "Triage for suspected MFA fatigue: repeated push prompts followed by an approval.",
+  "category": "identity",
+  "techniques": [
+    "T1078",
+    "T1110",
+    "T1621"
+  ],
+  "recommendedActions": [
+    "Open a case note and keep every response action in dry-run mode.",
+    "Ask the user to confirm whether the recent MFA prompts were expected.",
+    "Review MFA push volume and look for repeated denials followed by a late approval.",
+    "If MFA fatigue is confirmed, recommend session revocation and password reset as analyst-approved steps.",
+    "Suggest number-matching or prompt throttling as a follow-up hardening recommendation."
+  ],
+  "dryRunOnly": true
+}

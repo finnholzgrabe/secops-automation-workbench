@@ -47,6 +47,20 @@ dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspiciou
 
 The JSON report has a stable top-level shape (`alertId`, `severity`, `techniqueIds`, `recommendedPlaybook`, `recommendedActions`, `rationale`, `dryRun`). An unknown `--format` exits non-zero. Every report keeps `dryRun: true`, reflecting the safe-by-default response model.
 
+### Playbooks
+
+Recommendations are driven by local playbook definitions under [`playbooks/`](playbooks). Each playbook declares `id`, `title`, `description`, `category`, `techniques`, `recommendedActions`, and `dryRunOnly`. Triage selects the best-fitting playbook by category and technique overlap; when no directory is present it falls back to a built-in catalog, so triage works from a clean checkout.
+
+```sh
+# List the available playbooks
+dotnet run --project src/SecOps.Workbench.Cli -- playbooks list
+
+# Validate the playbook directory (exits non-zero on any invalid file)
+dotnet run --project src/SecOps.Workbench.Cli -- playbooks validate
+```
+
+Validation enforces the safety model: every playbook must set `dryRunOnly: true`, technique IDs must be ATT&CK-style, and required fields must be present. Invalid playbooks fail with readable, per-field error messages.
+
 ## Current slice
 
 Version 0.1 starts with a tiny but working vertical slice:
@@ -70,7 +84,6 @@ artifacts/                 Generated outputs; heavy or local outputs are ignored
 
 ## Roadmap
 
-- YAML-like playbook definitions with validation
 - Enrichment interfaces for mock reputation, asset, and identity context
 - Sigma-rule test fixtures and detection-content quality checks
 - Case-note generation in Markdown/JSON
