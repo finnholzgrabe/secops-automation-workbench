@@ -27,6 +27,16 @@ public class AlertParserTests
         Assert.ThrowsAny<Exception>(() => AlertParser.Parse(json));
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Throws_argument_exception_on_empty_input(string json)
+    {
+        // The CLI command handlers rely on this exception type to skip/report empty files
+        // gracefully instead of crashing.
+        Assert.Throws<ArgumentException>(() => AlertParser.Parse(json));
+    }
+
     [Fact]
     public void Rejects_unknown_severity()
     {

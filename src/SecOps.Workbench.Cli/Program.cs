@@ -164,7 +164,7 @@ internal static class Cli
 
             return 0;
         }
-        catch (Exception ex) when (ex is IOException or InvalidDataException or System.Text.Json.JsonException)
+        catch (Exception ex) when (ex is IOException or InvalidDataException or System.Text.Json.JsonException or ArgumentException)
         {
             Console.Error.WriteLine($"Triage failed: {ex.Message}");
             return 1;
@@ -324,7 +324,7 @@ internal static class Cli
             {
                 results.Add(engine.Triage(AlertParser.Parse(await File.ReadAllTextAsync(file))));
             }
-            catch (Exception ex) when (ex is IOException or InvalidDataException or System.Text.Json.JsonException)
+            catch (Exception ex) when (ex is IOException or InvalidDataException or System.Text.Json.JsonException or ArgumentException)
             {
                 Console.Error.WriteLine($"Skipping {Path.GetFileName(file)}: {ex.Message}");
             }
@@ -447,7 +447,7 @@ internal static class Cli
 
             return 0;
         }
-        catch (Exception ex) when (ex is IOException or InvalidDataException or System.Text.Json.JsonException)
+        catch (Exception ex) when (ex is IOException or InvalidDataException or System.Text.Json.JsonException or ArgumentException)
         {
             Console.Error.WriteLine($"Simulation failed: {ex.Message}");
             return 1;
