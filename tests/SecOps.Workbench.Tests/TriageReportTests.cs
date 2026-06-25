@@ -22,6 +22,16 @@ public class TriageReportTests
     }
 
     [Fact]
+    public void Markdown_contains_synthetic_enrichment_section()
+    {
+        var markdown = Triaged().Render(ReportFormat.Markdown);
+
+        Assert.Contains("Enrichment (synthetic)", markdown);
+        Assert.Contains("criticality", markdown);
+        Assert.Contains("risk tier", markdown);
+    }
+
+    [Fact]
     public void Json_exposes_stable_top_level_fields()
     {
         var json = Triaged().Render(ReportFormat.Json);
@@ -36,6 +46,11 @@ public class TriageReportTests
         Assert.Equal(3, root.GetProperty("techniqueIds").GetArrayLength());
         Assert.True(root.TryGetProperty("recommendedActions", out _));
         Assert.True(root.TryGetProperty("rationale", out _));
+
+        var enrichment = root.GetProperty("enrichment");
+        Assert.Equal("alice@example.invalid", enrichment.GetProperty("identity").GetProperty("principal").GetString());
+        Assert.True(enrichment.GetProperty("asset").TryGetProperty("criticality", out _));
+        Assert.Equal(4, enrichment.GetProperty("observables").GetArrayLength());
     }
 
     [Fact]

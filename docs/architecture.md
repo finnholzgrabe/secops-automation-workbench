@@ -6,7 +6,10 @@ The workbench is built around a deliberately small pipeline:
 raw alert JSON
   -> AlertParser
   -> SecurityAlert
-  -> TriageEngine (TechniqueMapper over a declarative ATT&CK-style catalog)
+  -> TriageEngine
+       -> TechniqueMapper (declarative ATT&CK-style catalog)
+       -> EnrichmentService (synthetic identity / asset / reputation providers)
+       -> PlaybookSelector (data-driven playbook definitions)
   -> TriageResult
   -> CLI report (markdown | json) / generated case note
 ```

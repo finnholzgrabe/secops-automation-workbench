@@ -9,7 +9,8 @@ public sealed record TriageResult(
     IReadOnlyList<string> TechniqueIds,
     string RecommendedPlaybook,
     IReadOnlyList<string> RecommendedActions,
-    string Rationale)
+    string Rationale,
+    EnrichmentResult Enrichment)
 {
     /// <summary>Renders the report in the requested format.</summary>
     public string Render(ReportFormat format) => format switch
@@ -69,16 +70,62 @@ public sealed record TriageResult(
 
             writer.WriteString("rationale", Rationale);
             writer.WriteBoolean("dryRun", true);
+
+            writer.WriteStartObject("enrichment");
+            WriteIdentity(writer, Enrichment.Identity);
+            WriteAsset(writer, Enrichment.Asset);
+            writer.WriteStartArray("observables");
+            foreach (var observable in Enrichment.Observables)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("observable", observable.Observable);
+                writer.WriteString("verdict", observable.Verdict);
+                writer.WriteString("context", observable.Context);
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+
             writer.WriteEndObject();
         }
 
         return Encoding.UTF8.GetString(buffer.ToArray());
     }
 
+    private static void WriteIdentity(Utf8JsonWriter writer, IdentityContext identity)
+    {
+        writer.WriteStartObject("identity");
+        writer.WriteString("principal", identity.Principal);
+        writer.WriteBoolean("isPrivileged", identity.IsPrivileged);
+        writer.WriteString("riskTier", identity.RiskTier);
+        writer.WriteStartArray("riskHints");
+        foreach (var hint in identity.RiskHints)
+        {
+            writer.WriteStringValue(hint);
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+
+    private static void WriteAsset(Utf8JsonWriter writer, AssetContext asset)
+    {
+        writer.WriteStartObject("asset");
+        writer.WriteString("asset", asset.Asset);
+        writer.WriteString("criticality", asset.Criticality);
+        writer.WriteStartArray("notes");
+        foreach (var note in asset.Notes)
+        {
+            writer.WriteStringValue(note);
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+
     public string ToMarkdown()
     {
         var techniques = TechniqueIds.Count == 0 ? "none" : string.Join(", ", TechniqueIds);
         var actions = string.Join(Environment.NewLine, RecommendedActions.Select(action => $"- {action}"));
+        var enrichment = BuildEnrichmentMarkdown();
 
         return $"""
                # Triage: {Alert.Title}
@@ -94,9 +141,29 @@ public sealed record TriageResult(
 
                {Rationale}
 
+               ## Enrichment (synthetic)
+
+               {enrichment}
+
                ## Recommended safe actions
 
                {actions}
                """;
+    }
+
+    private string BuildEnrichmentMarkdown()
+    {
+        var lines = new List<string>
+        {
+            $"- Identity: {Enrichment.Identity.Principal} — risk tier {Enrichment.Identity.RiskTier}"
+                + (Enrichment.Identity.IsPrivileged ? " (privileged)" : string.Empty),
+            $"- Asset: {Enrichment.Asset.Asset} — criticality {Enrichment.Asset.Criticality}",
+            "- Observable context:"
+        };
+
+        lines.AddRange(Enrichment.Observables.Select(
+            observable => $"  - {observable.Observable}: {observable.Verdict} — {observable.Context}"));
+
+        return string.Join(Environment.NewLine, lines);
     }
 }

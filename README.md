@@ -61,6 +61,10 @@ dotnet run --project src/SecOps.Workbench.Cli -- playbooks validate
 
 Validation enforces the safety model: every playbook must set `dryRunOnly: true`, technique IDs must be ATT&CK-style, and required fields must be present. Invalid playbooks fail with readable, per-field error messages.
 
+### Enrichment (synthetic)
+
+Triage attaches enrichment context behind three interfaces — `IIdentityContextProvider`, `IAssetContextProvider`, and `IReputationProvider`. **Only synthetic mock providers are implemented**: they make no network calls, read no real systems, and are fully deterministic (a stable FNV hash is used instead of `string.GetHashCode`, which is randomized per process). The enrichment adds principal risk hints, asset criticality, and per-observable context to every report, and is clearly labelled `synthetic` in the output. Real identity-provider, CMDB, or threat-intel integrations are intentionally out of scope.
+
 ## Current slice
 
 Version 0.1 starts with a tiny but working vertical slice:
@@ -68,8 +72,9 @@ Version 0.1 starts with a tiny but working vertical slice:
 1. Load an alert JSON file.
 2. Normalize it into a typed domain model.
 3. Map selected signals to ATT&CK-style technique IDs.
-4. Select a safe playbook recommendation.
-5. Print a deterministic analyst-facing triage summary.
+4. Attach synthetic enrichment (identity, asset, observable context).
+5. Select a safe playbook recommendation.
+6. Print a deterministic analyst-facing triage summary.
 
 ## Architecture
 
@@ -84,7 +89,6 @@ artifacts/                 Generated outputs; heavy or local outputs are ignored
 
 ## Roadmap
 
-- Enrichment interfaces for mock reputation, asset, and identity context
 - Sigma-rule test fixtures and detection-content quality checks
 - Case-note generation in Markdown/JSON
 - Safe response simulator with dry-run and rollback semantics
