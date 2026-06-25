@@ -29,6 +29,11 @@ internal static class Cli
             return RunPlaybooks(args);
         }
 
+        if (args[0] == "detections")
+        {
+            return RunDetections(args);
+        }
+
         Console.Error.WriteLine($"Unknown command '{args[0]}'.");
         PrintHelp();
         return 2;
@@ -207,6 +212,54 @@ internal static class Cli
         return invalid == 0 ? 0 : 1;
     }
 
+    private static int RunDetections(string[] args)
+    {
+        var subcommand = args.Length >= 2 ? args[1] : null;
+        var directory = args.Length >= 3 ? args[2] : DetectionStore.DefaultDirectory;
+
+        if (subcommand != "lint")
+        {
+            Console.Error.WriteLine("Usage: secops-workbench detections lint [directory]");
+            return 2;
+        }
+
+        if (!Directory.Exists(directory))
+        {
+            Console.Error.WriteLine($"Detections directory '{directory}' was not found.");
+            return 1;
+        }
+
+        var results = DetectionStore.LintDirectory(directory);
+        if (results.Count == 0)
+        {
+            Console.Error.WriteLine($"No detection files (*.yml, *.yaml) found in '{directory}'.");
+            return 1;
+        }
+
+        var failed = 0;
+        foreach (var detection in results)
+        {
+            var name = Path.GetFileName(detection.Path);
+            if (detection.Issues.Count == 0)
+            {
+                Console.WriteLine($"OK    {name}");
+            }
+            else
+            {
+                failed++;
+                Console.WriteLine($"FAIL  {name}");
+                foreach (var issue in detection.Issues)
+                {
+                    Console.WriteLine($"        - {issue}");
+                }
+            }
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"{results.Count - failed}/{results.Count} detections passed linting.");
+        return failed == 0 ? 0 : 1;
+    }
+
     private static void PrintHelp()
     {
         Console.WriteLine("""
@@ -217,6 +270,7 @@ internal static class Cli
                             secops-workbench version
                             secops-workbench triage <alert.json> [--format markdown|json] [--case-note] [--out <path>]
                             secops-workbench playbooks <list|validate> [directory]
+                            secops-workbench detections lint [directory]
 
                           Options for 'triage':
                             --format markdown|json   Output format (default: markdown).
@@ -224,6 +278,7 @@ internal static class Cli
                             --out <path>             Write the report to a file instead of stdout.
 
                           The 'playbooks' command reads JSON playbooks from a directory (default: playbooks/).
+                          The 'detections' command lints Sigma-inspired rules from a directory (default: detections/).
 
                           This is an engineering workbench for synthetic alert triage and safe playbook recommendations.
                           """);

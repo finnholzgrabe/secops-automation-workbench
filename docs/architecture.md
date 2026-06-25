@@ -24,6 +24,13 @@ the best fit by category and technique overlap. A built-in `PlaybookCatalog`
 mirrors the files so triage and unit tests work from a clean checkout, and a test
 guards the two against drift.
 
+Detection content is treated as a separate quality concern. `detections/` holds
+Sigma-inspired example rules; `DetectionLinter` enforces required, reviewable
+fields (title, status, ATT&CK tag, false-positive notes, test-fixture reference)
+with dependency-free structural checks, and the CLI additionally verifies the
+referenced fixture exists. These are illustrative examples, not production
+detections.
+
 ## Boundaries
 
 - `SecOps.Workbench.Core` contains deterministic domain logic only.

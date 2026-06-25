@@ -75,6 +75,16 @@ dotnet run --project src/SecOps.Workbench.Cli -- triage samples/alerts/suspiciou
 
 Case notes are Markdown only and, like every output, are generated from synthetic data with all response steps framed as dry-run recommendations.
 
+### Detection content linting
+
+The [`detections/`](detections) folder holds **Sigma-inspired example rules** (not production detections). A dependency-free content linter checks each rule for the fields that make a detection reviewable: a `title`, a valid Sigma `status`, at least one ATT&CK technique tag (`attack.tNNNN`), meaningful `falsepositives` notes, and a `testFixture` reference that must point to an existing fixture file.
+
+```sh
+dotnet run --project src/SecOps.Workbench.Cli -- detections lint
+```
+
+The linter exits non-zero if any rule is missing a required field, uses an invalid status, or references a missing fixture. It performs structural checks on the rule text rather than parsing full YAML, which keeps the core dependency-free; it is a content-quality gate, not a Sigma execution engine.
+
 ## Current slice
 
 Version 0.1 starts with a tiny but working vertical slice:
@@ -94,12 +104,13 @@ src/SecOps.Workbench.Cli   File IO, command parsing, user-facing output
 tests/SecOps.Workbench.Tests xUnit regression tests for parsing, mapping, triage, and output contracts
 docs/                      Architecture, threat model, roadmap, and scope notes
 samples/alerts/            Tiny synthetic alerts only
+playbooks/                 Local JSON playbook definitions
+detections/                Sigma-inspired example rules and test fixtures
 artifacts/                 Generated outputs; heavy or local outputs are ignored
 ```
 
 ## Roadmap
 
-- Sigma-rule test fixtures and detection-content quality checks
 - Safe response simulator with dry-run and rollback semantics
 - Optional adapters for local Wazuh/Shuffle labs, never enabled by default
 

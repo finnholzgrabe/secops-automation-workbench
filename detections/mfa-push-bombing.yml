@@ -1,0 +1,28 @@
+title: MFA Push Bombing Followed By Approval
+id: 9a2b7c1d-3e5f-4061-8273-b4c5d6e7f809
+status: experimental
+description: >
+  Detects repeated MFA push prompts for a single principal followed by an
+  approval, which may indicate MFA fatigue. Sigma-inspired example for the
+  SecOps Automation Workbench - not a production detection.
+references:
+  - https://attack.mitre.org/techniques/T1621/
+author: SecOps Automation Workbench (synthetic example)
+logsource:
+  product: identity
+  service: mfa
+detection:
+  prompts:
+    event_action: mfa_prompt
+  approval:
+    event_action: mfa_approved
+  timeframe: 10m
+  condition: prompts | count() by principal > 5 and approval
+falsepositives:
+  - User traveling across time zones generating extra prompts.
+  - Flaky network causing the client to re-request prompts.
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1621
+testFixture: fixtures/mfa-push-bombing.fixture.json

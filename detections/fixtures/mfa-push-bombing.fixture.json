@@ -1,0 +1,13 @@
+{
+  "description": "Synthetic events that should trigger mfa-push-bombing.yml.",
+  "shouldMatch": true,
+  "events": [
+    { "event_action": "mfa_prompt", "principal": "alice@example.invalid", "ts": "2026-06-25T10:15:01Z" },
+    { "event_action": "mfa_prompt", "principal": "alice@example.invalid", "ts": "2026-06-25T10:15:11Z" },
+    { "event_action": "mfa_prompt", "principal": "alice@example.invalid", "ts": "2026-06-25T10:15:21Z" },
+    { "event_action": "mfa_prompt", "principal": "alice@example.invalid", "ts": "2026-06-25T10:15:31Z" },
+    { "event_action": "mfa_prompt", "principal": "alice@example.invalid", "ts": "2026-06-25T10:15:41Z" },
+    { "event_action": "mfa_prompt", "principal": "alice@example.invalid", "ts": "2026-06-25T10:15:51Z" },
+    { "event_action": "mfa_approved", "principal": "alice@example.invalid", "ts": "2026-06-25T10:16:05Z" }
+  ]
+}

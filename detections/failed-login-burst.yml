@@ -1,0 +1,26 @@
+title: Failed Login Burst From Single Source
+id: 6f1d8b2a-1c4e-4a7d-9b3f-0a1b2c3d4e5f
+status: test
+description: >
+  Detects a burst of failed authentication attempts for a single principal,
+  which may indicate brute force or password spraying. Sigma-inspired example
+  for the SecOps Automation Workbench - not a production detection.
+references:
+  - https://attack.mitre.org/techniques/T1110/
+author: SecOps Automation Workbench (synthetic example)
+logsource:
+  product: identity
+  service: authentication
+detection:
+  selection:
+    event_action: login_failed
+  timeframe: 5m
+  condition: selection | count() by principal > 10
+falsepositives:
+  - Legitimate user repeatedly mistyping a password.
+  - Service account using stale credentials after a rotation.
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1110
+testFixture: fixtures/failed-login-burst.fixture.json

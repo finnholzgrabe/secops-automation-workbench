@@ -1,0 +1,17 @@
+{
+  "description": "Synthetic events that should trigger failed-login-burst.yml.",
+  "shouldMatch": true,
+  "events": [
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:01Z" },
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:05Z" },
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:09Z" },
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:13Z" },
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:17Z" },
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:21Z" },
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:25Z" },
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:29Z" },
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:33Z" },
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:37Z" },
+    { "event_action": "login_failed", "principal": "alice@example.invalid", "ts": "2026-06-25T10:00:41Z" }
+  ]
+}
