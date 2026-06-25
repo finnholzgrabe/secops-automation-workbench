@@ -1,0 +1,11 @@
+{
+  "id": "sample-003",
+  "title": "Suspicious process spawned on endpoint",
+  "source": "synthetic-edr",
+  "severity": "low",
+  "category": "endpoint",
+  "timestampUtc": "2026-06-25T08:45:00Z",
+  "principal": "bob@example.invalid",
+  "asset": "workstation-lab-12",
+  "observables": ["suspicious_process"]
+}

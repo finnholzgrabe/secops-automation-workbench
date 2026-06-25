@@ -39,6 +39,11 @@ internal static class Cli
             return await RunSimulateAsync(args);
         }
 
+        if (args[0] == "batch")
+        {
+            return await RunBatchAsync(args);
+        }
+
         Console.Error.WriteLine($"Unknown command '{args[0]}'.");
         PrintHelp();
         return 2;
@@ -239,6 +244,114 @@ internal static class Cli
         return invalid == 0 ? 0 : 1;
     }
 
+    private static async Task<int> RunBatchAsync(string[] args)
+    {
+        string? directory = null;
+        var format = "json";
+        string? outPath = null;
+
+        for (var i = 1; i < args.Length; i++)
+        {
+            var arg = args[i];
+            switch (arg)
+            {
+                case "--format":
+                    if (i + 1 >= args.Length || args[i + 1] is not ("json" or "csv"))
+                    {
+                        Console.Error.WriteLine("Invalid or missing value for --format. Use 'json' or 'csv'.");
+                        return 2;
+                    }
+
+                    format = args[++i];
+                    break;
+
+                case "--out":
+                    if (i + 1 >= args.Length)
+                    {
+                        Console.Error.WriteLine("Missing value for --out (expected a file path).");
+                        return 2;
+                    }
+
+                    outPath = args[++i];
+                    break;
+
+                default:
+                    if (arg.StartsWith('-'))
+                    {
+                        Console.Error.WriteLine($"Unknown option '{arg}'.");
+                        return 2;
+                    }
+
+                    if (directory is not null)
+                    {
+                        Console.Error.WriteLine("Only one alert directory can be batched at a time.");
+                        return 2;
+                    }
+
+                    directory = arg;
+                    break;
+            }
+        }
+
+        if (directory is null)
+        {
+            Console.Error.WriteLine("Usage: secops-workbench batch <alert-directory> [--format json|csv] [--out <path>]");
+            return 2;
+        }
+
+        if (!Directory.Exists(directory))
+        {
+            Console.Error.WriteLine($"Alert directory '{directory}' was not found.");
+            return 1;
+        }
+
+        var files = Directory.EnumerateFiles(directory, "*.json")
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToList();
+
+        if (files.Count == 0)
+        {
+            Console.Error.WriteLine($"No alert files (*.json) found in '{directory}'.");
+            return 1;
+        }
+
+        var engine = new TriageEngine(PlaybookStore.LoadForTriage(PlaybookStore.DefaultDirectory));
+        var results = new List<TriageResult>();
+
+        foreach (var file in files)
+        {
+            try
+            {
+                results.Add(engine.Triage(AlertParser.Parse(await File.ReadAllTextAsync(file))));
+            }
+            catch (Exception ex) when (ex is IOException or InvalidDataException or System.Text.Json.JsonException)
+            {
+                Console.Error.WriteLine($"Skipping {Path.GetFileName(file)}: {ex.Message}");
+            }
+        }
+
+        if (results.Count == 0)
+        {
+            Console.Error.WriteLine("No valid alerts were triaged.");
+            return 1;
+        }
+
+        var summary = TriageSummary.From(results);
+        var output = format == "csv" ? summary.ToCsv() : summary.ToJson();
+
+        if (outPath is null)
+        {
+            Console.WriteLine(output);
+        }
+        else
+        {
+            await File.WriteAllTextAsync(outPath, output);
+            Console.Error.WriteLine($"Batch summary written to {outPath}");
+        }
+
+        return 0;
+    }
+
     private static async Task<int> RunSimulateAsync(string[] args)
     {
         string? scenarioPath = null;
@@ -399,6 +512,7 @@ internal static class Cli
                             secops-workbench version
                             secops-workbench triage <alert.json> [--format markdown|json] [--case-note] [--out <path>]
                             secops-workbench simulate <scenario.json> [--format markdown|json] [--out <path>] [--attack-layer <path>]
+                            secops-workbench batch <alert-directory> [--format json|csv] [--out <path>]
                             secops-workbench playbooks <list|validate> [directory]
                             secops-workbench detections lint [directory]
 

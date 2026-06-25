@@ -92,6 +92,17 @@ dotnet run --project src/SecOps.Workbench.Cli -- simulate samples/scenarios/iden
 
 A scenario file is a `name`, a `description`, and an ordered `alerts` array (each entry uses the same shape as a single alert). The simulator orders the timeline by timestamp, reports the peak severity, and tallies technique frequency across the incident.
 
+### Batch triage and metrics
+
+Triage every alert in a directory and emit aggregate metrics — severity counts, technique frequency, and playbook distribution — as JSON or CSV:
+
+```sh
+dotnet run --project src/SecOps.Workbench.Cli -- batch samples/alerts --format json
+dotnet run --project src/SecOps.Workbench.Cli -- batch samples/alerts --format csv --out artifacts/triage-summary.csv
+```
+
+Files that fail to parse are reported on stderr and skipped; the command still summarizes the alerts that succeeded.
+
 ### Detection content linting
 
 The [`detections/`](detections) folder holds **Sigma-inspired example rules** (not production detections). A dependency-free content linter checks each rule for the fields that make a detection reviewable: a `title`, a valid Sigma `status`, at least one ATT&CK technique tag (`attack.tNNNN`), meaningful `falsepositives` notes, and a `testFixture` reference that must point to an existing fixture file.
